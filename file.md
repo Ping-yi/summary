@@ -92,7 +92,7 @@
 
 1. 创建一个新的空对象实例。
 2. 将此空对象的隐式原型指向其构造函数的显示原型。
-3. 执行构造函数（传入相应的参数，如果没有参数就不用传），同时 [this](#this指向) 指向这个新实例。
+3. 执行构造函数（传入相应的参数，如果没有参数就不用传），同时 [this](#this-指向) 指向这个新实例。
 4. 如果返回值是一个新对象，那么直接返回该对象；如果无返回值或者返回一个非对象值，那么就将步骤（1）创建的对象返回。
 
 ### 原型概念
@@ -246,7 +246,7 @@
 1. 在全局执行环境中，this 指向全局对象,在浏览器中全局对象是 Windows
 2. 在全局函数中,this 指向 Windows
 3. 当函数在对象中作为方法被调用时,this 指向为调用该函数的对象
-4. 在构造函数中,[new 关键字](#new运算符)
+4. 在构造函数中,[new关键字](#new-运算符)
    1. 如果返回值是一个对象,那么 this 指向其返回的对象
    2. 如果不是或者没有返回,则指向函数所创建的实例
 5. 箭头函数没有this,如果箭头函数被非箭头函数包含,this指向的就是最近一层非箭头函数
@@ -523,7 +523,8 @@ var arr3 = [...arr1, ...arr2]
       * router.beforeResolve 全局解析守卫(2.5.0+) 在beforeRouteEnter调用之后调用
       * router.afterEach 全局后置钩子 进入路由之后
    2. 路由独享守卫
-   3. 路由组件内的守卫
+      * router.afterEach
+   1. 路由组件内的守卫
       * beforeRouteEnter 进入路由前, 在路由独享守卫后调用 不能 获取组件实例 this，组件实例还没被创建
       * beforeRouteUpdate (2.2) 路由复用同一个组件时, 在当前路由改变，但是该组件被复用时调用 可以访问组件实例 this
       * beforeRouteLeave 离开当前路由时, 导航离开该组件的对应路由时调用，可以访问组件实例 this
@@ -555,21 +556,23 @@ var arr3 = [...arr1, ...arr2]
        - getDerivedStateFromProps(nextProps, prevState)
          - 调用render之前调用,并且在组件初始挂载和更新之前调用,可以返回一个对象更新state,返回null则不更新任何内容
        - getSnapshotBeforeUpdate(prevProps, prevState)
-  2. setState
+2. setState
       - setState是异步的，不会立即改变state的值
       - 多次调用setState会状态合并。
       - setState可以接受一个函数,获取到上一次state的值
       - 第二个参数可以是一个回调函数。
         - 是在setState调用完成组件开始渲染时调用,可以获取更新后的state的值
-  3. 坑点
+3. 坑点
      1. JSX做表达式判断时候，需要强转为boolean类型,不强转会显示原来的数值
-  4. 优化方案
-     1. shouldComponentUpdate对新旧props做比较,避免不必要的渲染,可用PureReactComponent组件,内部已经封装了新旧shouldComponentUpdate的浅比较逻辑
+4. 优化方案
+     1. shouldComponentUpdate对新旧props做比较,避免不必要的渲染,可用PureReactComponent组件,内部已经封装了新旧props的浅比较逻辑
      2. 对于列表增加唯一key标识
      3. render中减少匿名函数的使用
-  5. 高阶组件HOC
+5. 高阶组件HOC
      1. 是一个函数,接收一个组件返回新的增强组件
      2. 主要功能是代码复用
+
+## vue和react的区别
 
 ### redux
 1. connect原理
@@ -583,5 +586,9 @@ var arr3 = [...arr1, ...arr2]
    
       唯一改变state的方法就是触发action，action是一个用于描述以发生时间的普通对象
    3. 数据改变只能通过纯函数来执行,编写reducers
+
+# 公众号
+## 权限流程
+获取授权信息 根据code获取用户openid
   
  
