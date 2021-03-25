@@ -228,16 +228,18 @@
 - 如果函数有多个同名参数，那么最后一个参数（即使没有定义）会覆盖前面的同名函数
 
 #### var,let,const
-
-- let
-  - 声明的变量只在它所在的代码块中生效 比如 for 循环 用 let 声明的 i 只在 for 循环内有效
-  - 不会变量提升,变量要在声明后使用否则会报错
-  - 不允许在相同作用域内多次重复同一个变量
-- const
-  - 声明创建的值不允许修改,声明的变量只在它所在的代码块中生效
-  - 如果修改基本数据类型的值,会报错,修改引用数据类型的话则不会
-- var
-  - [变量提升](#变量提升)
+- 作用域
+  - Js中是没有块级作用域，只有全局作用域和函数作用域，var声明的变量作用域在该语句声明的函数内。
+  - es6规范中添加了块级作用域，Let和const声明的变量作用域在该语句生命的代码块中。
+- 变量提升[变量提升](#变量提升)
+  - Var会变量提升。
+  - Let和const不会，不能在声明变量之前使用，会报错。
+- 重复声明相同变量问题
+  - Var对于重复声明变量，不会报错。
+  - Let和const不允许。
+- 其他
+  - Const声明常量时需直接做赋值操作。
+  - Const声明的变量，值不可修改。所以一般用于声明常量。但是对于变量是复杂类型的数据，引用地址不可修改，但是内容是可以修改的。
 
 ### this 指向
 
@@ -276,7 +278,7 @@
 
 ### 数组去重
 
-1. 使用 es6 的 new Set 构造函数初始化数组,然后使用 array.from
+1. 使用 es6 的 new Set 构造函数初始化数组,然后使用 array.from转化为新数组
 2. 利用 for 嵌套 for 循环,如果第一个循环内每一项不等于第二个循环的项,就往新数组中添加
 3. 利用 for 循环内 indexOf 或者 includes,创建一个新数组,检测新数组中是否包含原数组的值,不包含则往新数组中添加
 4. filter 循环内使用 indexOf,当前项的第一个索引值是否等于当前循环索引值,返回新数组
@@ -321,10 +323,6 @@ var arr2 = ['c'];
 var arr3 = [...arr1, ...arr2]
 ```
 
-### 数组去重
-
-1. [...new Set(array)]
-
 ## 数组方法
 
 1. 遍历类
@@ -359,6 +357,11 @@ var arr3 = [...arr1, ...arr2]
 * splice() 从数组中添加或删除元素。
 * toString() 用逗号把数组中元素分隔并转换为字符串，并返回结果。
 
+## ES6
+### 箭头函数
+  * 箭头函数是匿名函数，不能作为构造函数，不能使用new。
+  * 箭头函数不绑定arguments，取而代之用rest参数...解决
+  * 箭头函数不绑定this，会捕获其所在的上下文的this值，作为自己的this值。
 
 ## dom
 
@@ -438,16 +441,22 @@ var arr3 = [...arr1, ...arr2]
 3. 数据绑定原理
    采用数据劫持结合发布者-订阅者模式的方式，在组件挂载时，
    1. 实现监听器Observe,通过 Object.defineProperty() 来劫持data中各个属性的setter，getter，在数据被读取时进行依赖收集,在数据变动时发布消息给订阅者，触发相应监听回调。
-   2. 实现一个订阅器Dep,用来收集Observe和watcher
+   2. 实现一个解析器 Compile，可以解析每个节点的相关指令，对模板数据和订阅器进行初始化。
    3. 通过订阅者watcher,可以收到属性的变化并执行相应的方法,从而更新视图
-   4. 实现一个解析器 Compile，可以解析每个节点的相关指令，对模板数据和订阅器进行初始化。
+   4. 由于data的某个key在一个视图中可能出现多次，所以每个key都需要一个管家dep来管理多个watcher。
+   5. 将来data中的数据一旦发生变化，会首先找到对应的dep，通知所有watcher执行更新函数。
+4. Observer依赖收集思路
+   - defineReactive时为每个key创建一个dep实例
+   - 初始化视图时读取某个key，例如name1，创建一个watcher1
+   - 由于触发name1的getter方法，便将watcher1添加到name1对象的dep中
+   - 当name1更新，触发setter，便可以通过对应的dep通知其管理所有的watcher更新。
   
-4. vue实现流程
+5. vue实现流程
    1. 解析模板成 render 函数
    2. 响应式开始监听
    3. 首次渲染，显示页面，且绑定依赖
    4. data 属性变化
-5. 生命周期
+6. 生命周期
    - beforeCreate	组件实例被创建之初，vue 实例的挂载元素$el和数据对象 data 都为 undefined，还未初始化。
    - created	组件实例已经完全创建，属性和方法也可用，但真实dom还没有生成，$el还不可用
    - beforeMount	在挂载开始之前被调用：相关的 render 函数首次被调用,进行模版编译
@@ -458,12 +467,12 @@ var arr3 = [...arr1, ...arr2]
    - deadctivated	keep-alive专属，组件被销毁时调用
    - beforeDestory	组件销毁前调用
    - destoryed	组件销毁后调用
-6. 父组件和子组件生命周期执行顺序
+7. 父组件和子组件生命周期执行顺序
    1. 加载渲染过程
       1. 父 beforeCreate -> 父 created -> 父 beforeMount -> 子 beforeCreate -> 子 created -> 子 beforeMount -> 子 mounted -> 父 mounted
    2. 子组件更新过程
       1. 父 beforeUpdate -> 子 beforeUpdate -> 子 updated -> 父 updated
-7. v-if 和 v-show 区别
+8. v-if 和 v-show 区别
    1. 手段：
     - v-if 是动态的向DOM树内添加或者删除DOM元素；
     - v-show 是通过设置DOM元素的display样式属性控制显隐；
@@ -479,7 +488,7 @@ var arr3 = [...arr1, ...arr2]
    5. 使用场景：
     - v-if 适合运营条件不大可能改变；
     - v-show 适合频繁切换。
-8.  $route和$router的区别
+9.  $route和$router的区别
    $route是“路由信息对象”，包括path，params，hash，query，fullPath，matched，name等路由信息参数。
    而$router是“路由实例”对象包括了路由的跳转方法，钩子函数等
 11. 组件传值
@@ -504,6 +513,8 @@ var arr3 = [...arr1, ...arr2]
    - 路由懒加载
      - resolve
      - import
+   - 使用函数式组件,无状态无法实例化,非常轻便,适合在只依赖外部数据传递而变化的组件
+   - 嵌套组件中父组件往孙组件中传值,如果子组件不需要使用传的props值,可以用$attrs属性传给孙组件
 11. Vue.js特点
     - 简洁：页面由HTML模板+Json数据+Vue实例组成
     - 数据驱动：自动计算属性和追踪依赖的模板表达式
@@ -516,14 +527,14 @@ var arr3 = [...arr1, ...arr2]
 1. 路由原理
    本质就是监听 URL 的变化，然后匹配路由规则，显示相应的页面，并且无须刷新。
    * hash 模式  `www.test.com/##/`
-   * history 模式
+   * history 模式  HTML5 History
 2. 路由守卫
    1. 全局守卫
       * router.beforeEach 全局前置守卫 进入路由之前
       * router.beforeResolve 全局解析守卫(2.5.0+) 在beforeRouteEnter调用之后调用
       * router.afterEach 全局后置钩子 进入路由之后
    2. 路由独享守卫
-      * router.afterEach
+      * router.beforeEnter
    1. 路由组件内的守卫
       * beforeRouteEnter 进入路由前, 在路由独享守卫后调用 不能 获取组件实例 this，组件实例还没被创建
       * beforeRouteUpdate (2.2) 路由复用同一个组件时, 在当前路由改变，但是该组件被复用时调用 可以访问组件实例 this
@@ -587,6 +598,12 @@ var arr3 = [...arr1, ...arr2]
       唯一改变state的方法就是触发action，action是一个用于描述以发生时间的普通对象
    3. 数据改变只能通过纯函数来执行,编写reducers
 
+## webpack
+### 优化
+  * 在配置 Loader 时通过 include 去缩小命中范围,可以只对src目录下的文件采用babel-loader
+  * resolve.modules 配置，指明存放第三方模块的绝对路径
+  * resolve.alias 配置，设置目录的别名
+  * UglifyJsPlugin 代码压缩
 # 公众号
 ## 权限流程
 获取授权信息 根据code获取用户openid
