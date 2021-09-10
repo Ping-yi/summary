@@ -11,4 +11,5 @@ mvvm
 Dep为什么能收集多个watcher
 
 require和import的区别
+不同项目使用不同版本的npm
 
